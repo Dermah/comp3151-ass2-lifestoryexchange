@@ -4,7 +4,13 @@
 
 #define TRUE  1
 #define FALSE 0
-  
+
+void announceDeath (int me) {
+   printf("%d dies blaming the mushroom soup.\n", me);
+   int ierr = MPI_Finalize();
+   exit(0);
+}
+
 int main(int argc, char **argv)
 {
    if (argc == 1) {
@@ -56,6 +62,7 @@ int main(int argc, char **argv)
       
       if (souped[me] == TRUE) {
          printf("I, %d, ate the soup!\n", me);
+         announceDeath(me);
       }
 
       printf("I, %d, am compatible with ", me);
