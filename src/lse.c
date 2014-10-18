@@ -14,7 +14,7 @@ int main(int argc, char **argv)
 
    char *progName = argv[0];
    char *fileName = argv[1];
-   char *deathProb = argv[2];
+   float deathProb = atof(argv[2]);
 
    FILE *fp;
    fp = fopen(fileName, "r");
@@ -25,13 +25,11 @@ int main(int argc, char **argv)
    }
 
    int numSeniors;
-
    fscanf(fp, "%d\n", &numSeniors);
-
-   printf("%d\n", numSeniors);
 
    int compatibility[numSeniors][numSeniors];
    int souped[numSeniors];
+
    int i = 0;
    int j = 0;
    while (j < numSeniors) {
@@ -49,26 +47,27 @@ int main(int argc, char **argv)
       souped[i-1] = TRUE;
    }
 
-   i = 0;
-   j = 0;
+   int ierr;
+   ierr = MPI_Init(&argc, &argv);
+   
+   {
+      int me;
+      ierr = MPI_Comm_rank(MPI_COMM_WORLD, &me);
+      
+      if (souped[me] == TRUE) {
+         printf("I, %d, ate the soup!\n", me);
+      }
 
-   while (i < numSeniors) {
-      while (j < numSeniors) {
-         printf("%d", compatibility[i][j]);
-         j++;
+      printf("I, %d, am compatible with ", me);
+      int i = 0;
+      while (i < numSeniors) {
+         if (compatibility[me][i] == TRUE) {
+            printf("%d ", i);
+         }
+         i++;
       }
       printf("\n");
-      j = 0;
-      i++;
    }
 
-   printf("SOUP\n");
-
-   i = 0;
-   while (i < numSeniors) {
-      printf("%d, ", souped[i]);
-      i++;
-   }
-
-   printf("\n");
+   ierr = MPI_Finalize();
 }
