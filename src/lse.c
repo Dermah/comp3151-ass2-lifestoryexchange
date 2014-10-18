@@ -79,6 +79,19 @@ int main(int argc, char **argv)
       ierr = MPI_Send(&message, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
       printf(" + %d + told %d that LSE_I_WANT_TO_EXCHANGE\n", me, i);
 
+      int recieve = FALSE;
+      MPI_Status status;
+      while (!recieve) {
+         ierr = MPI_Iprobe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &recieve, &status);
+      }
+      if (recieve) {
+         printf(" + %d + there is a message waiting from %d\n", me, status.MPI_SOURCE);
+         int recMes = 3892523984;
+         ierr = MPI_Recv(&recMes, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+         printf(" + %d + recieved a %d from %d\n", me, recMes, status.MPI_SOURCE);
+      } else {
+
+      }
 
    }
 
