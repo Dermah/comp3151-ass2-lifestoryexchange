@@ -1,10 +1,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <assert.h>
 #include <mpi.h>
 
-#define TRUE  1
-#define FALSE 0
+#define TRUE        1
+#define FALSE       0
+#define MAYBE_LATER 2
 
 #define LSE_I_WANT_TO_EXCHANGE 0
 #define LSE_THAT_SOUNDS_GREAT  1
@@ -60,20 +62,52 @@ void recieveMessage (struct myInfo *me) {
    }
 }
 
+void askPotentialMatch (struct myInfo *me) {
+   // just tell the first person you are compatible with that you wanna chat
+   int i = 0;
+   printf("!!! %d\n", me->numSeniors);
+   printf("- %d:", me->id);
+   while (i < me->numSeniors && me->compat[i] != TRUE) {
+      printf(" %d", me->compat[i]);
+      i++;
+   }
+   printf(" %d", me->compat[i]);
+   printf("\n");
+
+   if (i == me->numSeniors) {
+      // couldn't find anyone compatible
+      int foundLaters = FALSE;
+
+      i = 0;
+      while (foundLaters == FALSE && i < me->numSeniors) {
+         if (me->compat[i] == MAYBE_LATER) {
+            me->compat[i] = TRUE;
+            foundLaters = TRUE;
+         }
+         i++;
+      }
+
+      if (foundLaters == FALSE) {
+         announceVegetation(me);
+      } else {
+         i--;
+      }
+   }
+
+   int message = LSE_I_WANT_TO_EXCHANGE;
+   int ierr = MPI_Send(&message, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+   printf(" + %d + told %d that LSE_I_WANT_TO_EXCHANGE\n", me->id, i);
+   me->waitingFor = i;
+   me->waitTimer = 5;
+   assert(me->id != me->waitingFor);
+   printf("- %d waiting for %d\n", me->id, me->waitingFor);
+}
+
 void seniorMatch (struct myInfo *me) {
    int ierr;
 
-   // just tell the first person you are compatible with that you wanna chat
-   int i = 0;
-   while (me->compat[i] == FALSE) {
-      i++;
-   }
-   int message = LSE_I_WANT_TO_EXCHANGE;
-   ierr = MPI_Send(&message, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-   printf(" + %d + told %d that LSE_I_WANT_TO_EXCHANGE\n", me->id, i);
-   me->waitingFor = i;
+   askPotentialMatch(me);   
 
-   me->waitTimer = 5;
    // while (not matched) {
    while (me->pairedWith == NO_ONE) {
       // if message waiting
@@ -88,19 +122,42 @@ void seniorMatch (struct myInfo *me) {
          ierr = MPI_Recv(&recMes, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
          
          // decide what to do
+
+         if (status.MPI_SOURCE == me->waitingFor && recMes == LSE_THAT_SOUNDS_GREAT) {
+            // if it's who we want to hear from
+            printf(" + %d SHE SAID YES %d\n", me->id, me->waitingFor);
+            me->pairedWith = me->waitingFor;
+         } else if (status.MPI_SOURCE == me->waitingFor && recMes == LSE_I_WANT_TO_EXCHANGE) {
+            // if it's who we want to hear from
+            printf(" + %d SHE WANTS ME TOO %d\n", me->id, me->waitingFor);
+            me->pairedWith = me->waitingFor;
+         } else if (status.MPI_SOURCE == me->waitingFor && recMes == LSE_NO_THANKS) {
+            // if it's who we want to hear from and they say no
+            me->compat[me->waitingFor] = MAYBE_LATER;
+            me->waitingFor = NO_ONE;
+            printf(" + %d REJECTED\n", me->id );
+         } else if (status.MPI_SOURCE != me->waitingFor && recMes == LSE_I_WANT_TO_EXCHANGE) {
+            // if it's not who we wanted, tell them no thanks
+            int say = LSE_NO_THANKS;
+            int ierr = MPI_Send(&say, 1, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD);
+            printf(" + %d had to tell %d that it wasn't to be\n", me->id, status.MPI_SOURCE);
+         } else {
+            printf("! WARNING UNHANDLED CASE %d got a %d from %d\n", me->id, recMes, status.MPI_SOURCE);
+         }
       } else {
          // no message
          if (me->waitingFor == NO_ONE) {
-            // formulate message
+            askPotentialMatch(me);
          } else {
-            printf(" + %d I'm waiting for someone to message me\n", me->id);
+            printf(" + %d I'm waiting for %d to message me (timeout %d)\n", me->id, me->waitingFor, me->waitTimer);
             me->waitTimer--;
             if (me->waitTimer == 0) {
-               printf(" + %d I think someone died\n", me->id);
-               announceVegetation(me);
-               me->pairedWith = me->id;
+               printf(" + %d I think %d died\n", me->id, me->waitingFor);
+               //announceVegetation(me);
+               me->compat[me->waitingFor] = FALSE;
+               me->waitingFor = NO_ONE;
             } else {
-               usleep(100);
+               usleep(10000);
             }
             // go and wait for message i.e. goto start of loop
          }
@@ -156,31 +213,37 @@ int main(int argc, char **argv)
    ierr = MPI_Init(&argc, &argv);
    
    {
-      struct myInfo me;
-      ierr = MPI_Comm_rank(MPI_COMM_WORLD, &me.id);
-      me.pairedWith = NO_ONE;
-      me.compat = malloc(sizeof(int)*numSeniors);
-      me.waitingFor = NO_ONE;
+      struct myInfo *me = malloc(sizeof(struct myInfo));
+      me->compat = malloc(sizeof(int)*numSeniors);
+
+      ierr = MPI_Comm_rank(MPI_COMM_WORLD, &me->id);
+      me->pairedWith = NO_ONE;
+      me->waitingFor = NO_ONE;
+      me->numSeniors = numSeniors;
 
       i = 0;
       while (i < numSeniors) {
-         if (compatibility[me.id][i] == TRUE) {
-            me.compat[i] = TRUE;
+         if (compatibility[me->id][i] == TRUE) {
+            me->compat[i] = TRUE;
+         } else {
+            me->compat[i] = FALSE;
          }
 
          i++;
       }
 
-      printf(" + %d got my rank\n", me.id);      
 
-      if (souped[me.id] == TRUE) {
-         printf("I, %d, ate the soup!\n", me.id);
-         //announceDeath(me.id);
+      printf(" + %d got my rank\n", me->id);      
+
+      if (souped[me->id] == TRUE) {
+         printf("I, %d, ate the soup!\n", me->id);
+         //announceDeath(me->id);
       }
 
-      seniorMatch(&me);
+      seniorMatch(me);
 
-      free(me.compat);
+      free(me->compat);
+      free(me);
    }
 
    ierr = MPI_Finalize();
