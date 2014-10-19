@@ -26,8 +26,6 @@ void announceExchange (int i, int them);
 
 void announceVegetation (struct senior *me);
 
-void recieveMessage (struct senior *me);
-
 int pickRandomSenior (struct senior *me);
 
 void askPotentialMatch (struct senior *me);

@@ -34,29 +34,6 @@ void announceVegetation (struct senior *me) {
    exit(0);
 }
 
-void recieveMessage (struct senior *me) {
-   int ierr;
-   int recieve = FALSE;
-   MPI_Status status;
-   while (!recieve) {
-      ierr = MPI_Iprobe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &recieve, &status);
-   }
-   if (recieve) {
-      //printf(" + %d + there is a message waiting from %d\n", me->id, status.MPI_SOURCE);
-      int recMes = 3892523984;
-      ierr = MPI_Recv(&recMes, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-      //printf(" + %d + recieved a %d from %d\n", me->id, recMes, status.MPI_SOURCE);
-      if (me->compat[status.MPI_SOURCE] == TRUE) {
-         //printf(" + %d + I AM COMPATIBLE WITH %d\n", me->id, status.MPI_SOURCE);
-         me->pairedWith = TRUE;
-         //printf("%d PAIR3D %d\n", me->id, me->pairedWith);
-      }
-      
-   } else {
-
-   }
-}
-
 int pickRandomSenior (struct senior *me) {
    int i = 0;
    int alive[me->numSeniors];
