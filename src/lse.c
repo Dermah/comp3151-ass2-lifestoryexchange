@@ -28,7 +28,7 @@ int devrand(int high) {
    FILE *fp = fopen("/dev/urandom", "r");
 
    int num;
-   fread(&num, sizeof (int), 1, fp);
+   fread(&num, sizeof(int), 1, fp);
    fclose(fp);
    
    return abs((num%high));
@@ -73,19 +73,22 @@ void recieveMessage (struct myInfo *me) {
    }
 }
 
-void askPotentialMatch (struct myInfo *me) {
-   // just tell the first person you are compatible with that you wanna chat
+int pickRandomSenior (struct myInfo *me) {
    int i = 0;
-   printf("!!! %d\n", me->numSeniors);
-   printf("- %d:", me->id);
-   while (i < me->numSeniors && me->compat[i] != TRUE) {
-      printf(" %d", me->compat[i]);
+   int alive[me->numSeniors];
+   int numAlive = 0;
+   while (i < me->numSeniors) {
+      if (me->compat[i] == TRUE) {
+         alive[numAlive] = i;
+         numAlive++;
+      }
       i++;
    }
-   printf(" %d", me->compat[i]);
-   printf("\n");
 
-   if (i == me->numSeniors) {
+   int iPick = NO_ONE;
+
+   if (numAlive == 0) {
+
       // couldn't find anyone compatible
       int foundLaters = FALSE;
 
@@ -103,7 +106,19 @@ void askPotentialMatch (struct myInfo *me) {
       } else {
          i--;
       }
+      iPick = i;
+   } else {
+      int pick = devrand(numAlive);
+      printf(" = %d there are %d people that I can talk to\n", me->id, numAlive);
+      printf(" + %d I pick %d\n", me->id, alive[pick]);
+      iPick = alive[pick];
    }
+   
+   return iPick;
+}
+
+void askPotentialMatch (struct myInfo *me) {
+   int i = pickRandomSenior(me);
 
    int message = LSE_I_WANT_TO_EXCHANGE;
    int ierr = MPI_Send(&message, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
