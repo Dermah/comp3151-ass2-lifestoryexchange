@@ -76,39 +76,38 @@ int main(int argc, char **argv)
    ierr = MPI_Init(&argc, &argv);
    
    {
-      int me;
-      ierr = MPI_Comm_rank(MPI_COMM_WORLD, &me);
-      
-      printf("I, %d am sending\n", me);
-      
+      struct myInfo me;
+      ierr = MPI_Comm_rank(MPI_COMM_WORLD, &me.id);
+      me.pairedWith = NO_ONE;
+      me.compat = malloc(sizeof(int)*numSeniors);
+      me.waitingFor = NO_ONE;
 
-      if (souped[me] == TRUE) {
-         printf("I, %d, ate the soup!\n", me);
-         //announceDeath(me);
+      i = 0;
+      while (i < numSeniors) {
+         if (compatibility[me.id][i] == TRUE) {
+            me.compat[i] = TRUE;
+         }
+
+         i++;
+      }
+
+      printf(" + %d got my rank\n", me.id);      
+
+      if (souped[me.id] == TRUE) {
+         printf("I, %d, ate the soup!\n", me.id);
+         //announceDeath(me.id);
       }
 
       // just tell the first person you are compatible with that you wanna chat
       i = 0;
-      while (compatibility[me][i] == FALSE) {
+      while (compatibility[me.id][i] == FALSE) {
          i++;
       }
       int message = LSE_I_WANT_TO_EXCHANGE;
       ierr = MPI_Send(&message, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-      printf(" + %d + told %d that LSE_I_WANT_TO_EXCHANGE\n", me, i);
+      printf(" + %d + told %d that LSE_I_WANT_TO_EXCHANGE\n", me.id, i);
+      me.waitingFor = i;
 
-      int recieve = FALSE;
-      MPI_Status status;
-      while (!recieve) {
-         ierr = MPI_Iprobe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &recieve, &status);
-      }
-      if (recieve) {
-         printf(" + %d + there is a message waiting from %d\n", me, status.MPI_SOURCE);
-         int recMes = 3892523984;
-         ierr = MPI_Recv(&recMes, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-         printf(" + %d + recieved a %d from %d\n", me, recMes, status.MPI_SOURCE);
-      } else {
-
-      }
 
    }
 
