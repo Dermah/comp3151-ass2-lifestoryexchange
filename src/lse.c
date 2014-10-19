@@ -23,6 +23,17 @@ struct myInfo {
    int numSeniors;
 };
 
+// come up with a random number between 0 and num-1
+int devrand(int high) {
+   FILE *fp = fopen("/dev/urandom", "r");
+
+   int num;
+   fread(&num, sizeof (int), 1, fp);
+   fclose(fp);
+   
+   return abs((num%high));
+}
+
 void announceDeath (struct myInfo *me) {
    printf("%d dies blaming the mushroom soup.\n", me->id+1);
    int ierr = MPI_Finalize();
