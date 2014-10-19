@@ -235,6 +235,7 @@ int main(int argc, char **argv)
       souped[i-1] = TRUE;
    }
 
+   fclose(fp);
    int ierr;
    ierr = MPI_Init(&argc, &argv);
    
