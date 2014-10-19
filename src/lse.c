@@ -18,20 +18,23 @@ struct myInfo {
    int waitingFor;
    int pairedWith;
    int waitTimer;
+   int numSeniors;
 };
 
 void announceDeath (struct myInfo *me) {
-   printf("%d dies blaming the mushroom soup.\n", me->id);
+   printf("%d dies blaming the mushroom soup.\n", me->id+1);
    int ierr = MPI_Finalize();
    exit(0);
 }
 
 void announceExchange(int i, int them) {
-   printf("%d exchanges life stories with %d.\n", i, them);
+   printf("%d exchanges life stories with %d.\n", i+1, them+1);
 }
 
 void announceVegetation(struct myInfo *me) {
-   printf("%d has a seniors’ moment.\n", me->id);
+   printf("%d has a seniors’ moment.\n", me->id+1);
+   int ierr = MPI_Finalize();
+   exit(0);
 }
 
 void recieveMessage (struct myInfo *me) {
