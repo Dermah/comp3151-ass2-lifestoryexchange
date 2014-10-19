@@ -7,8 +7,18 @@
 
 #define LSE_I_WANT_TO_EXCHANGE 0
 
-void announceDeath (int me) {
-   printf("%d dies blaming the mushroom soup.\n", me);
+#define NO_ONE -1 
+
+struct myInfo {
+   int id;
+   int *compat; //of size numSeniors
+   int waitingFor;
+   int pairedWith;
+   int waitTimer;
+};
+
+void announceDeath (struct myInfo *me) {
+   printf("%d dies blaming the mushroom soup.\n", me->id);
    int ierr = MPI_Finalize();
    exit(0);
 }
