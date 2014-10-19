@@ -59,6 +59,17 @@ void recieveMessage (struct myInfo *me) {
 
 void seniorMatch (struct myInfo *me) {
    int ierr;
+
+   // just tell the first person you are compatible with that you wanna chat
+   int i = 0;
+   while (me->compat[i] == FALSE) {
+      i++;
+   }
+   int message = LSE_I_WANT_TO_EXCHANGE;
+   ierr = MPI_Send(&message, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+   printf(" + %d + told %d that LSE_I_WANT_TO_EXCHANGE\n", me->id, i);
+   me->waitingFor = i;
+
    me->waitTimer = 5;
    // while (not matched) {
    while (me->pairedWith == NO_ONE) {
@@ -163,16 +174,6 @@ int main(int argc, char **argv)
          printf("I, %d, ate the soup!\n", me.id);
          //announceDeath(me.id);
       }
-
-      // just tell the first person you are compatible with that you wanna chat
-      i = 0;
-      while (compatibility[me.id][i] == FALSE) {
-         i++;
-      }
-      int message = LSE_I_WANT_TO_EXCHANGE;
-      ierr = MPI_Send(&message, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-      printf(" + %d + told %d that LSE_I_WANT_TO_EXCHANGE\n", me.id, i);
-      me.waitingFor = i;
 
       seniorMatch(&me);
 
