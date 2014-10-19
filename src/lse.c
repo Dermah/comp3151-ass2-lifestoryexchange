@@ -21,6 +21,7 @@ struct myInfo {
    int pairedWith;
    int waitTimer;
    int numSeniors;
+   int souped;
 };
 
 // come up with a random number between 0 and num-1
@@ -247,6 +248,11 @@ int main(int argc, char **argv)
       me->pairedWith = NO_ONE;
       me->waitingFor = NO_ONE;
       me->numSeniors = numSeniors;
+      if (souped[me->id] == TRUE) {
+         me->souped = TRUE;
+         //printf("I, %d, ate the soup!\n", me->id);
+         //announceDeath(me->id);
+      }
 
       i = 0;
       while (i < numSeniors) {
@@ -261,11 +267,6 @@ int main(int argc, char **argv)
 
 
       //printf(" + %d got my rank\n", me->id);      
-
-      if (souped[me->id] == TRUE) {
-         //printf("I, %d, ate the soup!\n", me->id);
-         //announceDeath(me->id);
-      }
 
       seniorMatch(me);
 
