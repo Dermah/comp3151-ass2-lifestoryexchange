@@ -23,6 +23,13 @@ void announceDeath (struct myInfo *me) {
    exit(0);
 }
 
+void announceExchange(int i, int them) {
+   printf("%d exchanges life stories with %d.\n", i, them);
+}
+
+void announceVegetation(struct myInfo *me) {
+   printf("%d has a seniors’ moment.\n", me->id);
+}
 int main(int argc, char **argv)
 {
    if (argc == 1) {
