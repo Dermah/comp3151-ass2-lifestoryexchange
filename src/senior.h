@@ -8,6 +8,11 @@
 
 #define NO_ONE -1 
 
+// total timeout for a senior is 
+// SENIOR_TIMEOUT_CHECKS * SENIOR_TIMEOUT_PAUSE useconds
+#define SENIOR_TIMEOUT_CHECKS 5
+#define SENIOR_TIMEOUT_PAUSE  6000
+
 struct senior {
    int id;
    int *compat; //of size numSeniors
@@ -32,7 +37,7 @@ int devrand(int high);
 void announceDeath (struct senior *me);
 
 // announce exchange with another senior. senior should not do much else after this
-void announceExchange (int i, int them);
+void announceExchange (struct senior *me);
 
 // announce a period of vegetative thought. calls senior_finalise
 void announceVegetation (struct senior *me);

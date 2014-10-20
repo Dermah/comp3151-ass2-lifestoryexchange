@@ -43,17 +43,17 @@ int devrand(int high) {
 }
 
 void announceDeath (struct senior *me) {
-   printf("%d dies blaming the mushroom soup.\n", me->id+1);
+   printf("%d dies blaming the mushroom soup.\n", (me->id)+1);
    senior_finalise(me);
    exit(0);
 }
 
-void announceExchange (int i, int them) {
-   printf("%d exchanges life stories with %d.\n", i+1, them+1);
+void announceExchange (struct senior *me) {
+   printf("%d exchanges life stories with %d.\n", (me->id)+1, (me->pairedWith)+1);
 }
 
 void announceVegetation (struct senior *me) {
-   printf("%d has a seniors’ moment.\n", me->id+1);
+   printf("%d has a seniors’ moment.\n", (me->id)+1);
    senior_finalise(me);
    exit(0);
 }
@@ -116,7 +116,7 @@ void askPotentialMatch (struct senior *me) {
    int ierr = MPI_Send(&message, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
    //printf(" + %d + told %d that LSE_I_WANT_TO_EXCHANGE\n", me->id, i);
    me->waitingFor = i;
-   me->waitTimer = 5;
+   me->waitTimer = SENIOR_TIMEOUT_CHECKS;
    assert(me->id != me->waitingFor);
    //printf("- %d waiting for %d\n", me->id, me->waitingFor);
 }
@@ -175,12 +175,12 @@ void seniorMatch (struct senior *me) {
                me->compat[me->waitingFor] = FALSE;
                me->waitingFor = NO_ONE;
             } else {
-               usleep(1000);
+               usleep(SENIOR_TIMEOUT_PAUSE);
             }
             // go and wait for message i.e. goto start of loop
          }
       }
    }
 
-   announceExchange(me->id, me->pairedWith);
+   announceExchange(me);
 }
