@@ -51,6 +51,9 @@ int main(int argc, char **argv)
    ierr = MPI_Init(&argc, &argv);
    
    {
+      int seed = devrand(9999999);
+      srand(seed);
+
       struct senior *me = malloc(sizeof(struct senior));
       me->compat = malloc(sizeof(int)*numSeniors);
 
