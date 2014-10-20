@@ -2,9 +2,10 @@
 #define FALSE       0
 #define MAYBE_LATER 2
 
-#define LSE_I_WANT_TO_EXCHANGE 0
-#define LSE_THAT_SOUNDS_GREAT  1
-#define LSE_NO_THANKS          2
+#define LSE_NO_MESSAGE           -1
+#define LSE_I_WANT_TO_EXCHANGE   0
+#define LSE_THAT_SOUNDS_GREAT    1
+#define LSE_NO_THANKS            2
 
 #define NO_ONE -1 
 

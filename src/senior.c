@@ -135,7 +135,7 @@ void seniorMatch (struct senior *me) {
          //printf(" + %d got a message\n", me->id);
          
          // get message
-         int recMes = 3892523984;
+         int recMes = LSE_NO_MESSAGE;
          MPI_Status status;
          ierr = MPI_Recv(&recMes, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
          
@@ -154,13 +154,22 @@ void seniorMatch (struct senior *me) {
             me->compat[me->waitingFor] = MAYBE_LATER;
             me->waitingFor = NO_ONE;
             //printf(" + %d REJECTED\n", me->id );
+         } else if (me->waitingFor == NO_ONE && recMes == LSE_I_WANT_TO_EXCHANGE) {
+            // we weren't expecting anything so let's accept the offer
+            int message = LSE_THAT_SOUNDS_GREAT;
+            int ierr = MPI_Send(&message, 1, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD);
+            //printf(" + %d + ACCEPTED %d 's' PROPOSTION WITH A LSE_THAT_SOUNDS_GREAT\n", me->id, status.MPI_SOURCE);
+            me->waitingFor = status.MPI_SOURCE;
+            me->pairedWith = me->waitingFor;
          } else if (status.MPI_SOURCE != me->waitingFor && recMes == LSE_I_WANT_TO_EXCHANGE) {
             // if it's not who we wanted, tell them no thanks
             int say = LSE_NO_THANKS;
             int ierr = MPI_Send(&say, 1, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD);
             //printf(" + %d had to tell %d that it wasn't to be\n", me->id, status.MPI_SOURCE);
+            
          } else {
             //printf("! WARNING UNHANDLED CASE %d got a %d from %d\n", me->id, recMes, status.MPI_SOURCE);
+            //printf("! NO THANKS WAS EXPECTING %d\n", me->waitingFor);
          }
       } else {
          // no message
