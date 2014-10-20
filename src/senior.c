@@ -69,7 +69,7 @@ int pickRandomSenior (struct senior *me) {
       }
       iPick = i;
    } else {
-      int pick = devrand(numAlive);
+      int pick = (rand() % numAlive);
       //printf(" = %d there are %d people that I can talk to\n", me->id, numAlive);
       //printf(" + %d I pick %d\n", me->id, alive[pick]);
       iPick = alive[pick];

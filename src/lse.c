@@ -61,6 +61,7 @@ int main(int argc, char **argv)
       me->pairedWith = NO_ONE;
       me->waitingFor = NO_ONE;
       me->numSeniors = numSeniors;
+      me->souped = FALSE;
       if (souped[me->id] == TRUE) {
          me->souped = TRUE;
          //printf("I, %d, ate the soup!\n", me->id);
