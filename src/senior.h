@@ -16,6 +16,7 @@ struct senior {
    int waitTimer;
    int numSeniors;
    int souped;
+   float deathProb;
 };
 
 int devrand(int high);

@@ -75,6 +75,7 @@ int main(int argc, char **argv)
          } else {
             me->compat[i] = FALSE;
          }
+   me->deathProb = deathProb;
 
          i++;
       }

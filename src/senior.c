@@ -80,7 +80,10 @@ int pickRandomSenior (struct senior *me) {
 
 void askPotentialMatch (struct senior *me) {
    if (me->souped == TRUE) {
-      announceDeath(me);
+      float roll = (float)rand()/(float)(RAND_MAX);
+      if (roll <= me->deathProb) {
+         announceDeath(me);
+      }
    }
    int i = pickRandomSenior(me);
 
@@ -147,7 +150,7 @@ void seniorMatch (struct senior *me) {
                me->compat[me->waitingFor] = FALSE;
                me->waitingFor = NO_ONE;
             } else {
-               usleep(10000);
+               usleep(1000);
             }
             // go and wait for message i.e. goto start of loop
          }
