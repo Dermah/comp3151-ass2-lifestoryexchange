@@ -50,16 +50,16 @@ int main(int argc, char **argv)
       souped[i-1] = TRUE;
    }
 
-   // done with config matrix
+   // done with config matrix file
    fclose(fp);
 
-   // begin parallelism
+   // begin parallelism, MPI_Init here
    struct senior* me = senior_init(numSeniors, argc, argv);
 
    // check if we ate the soup   
-   me->deathProb = deathProb;
    if (souped[me->id] == TRUE) {
       me->souped = TRUE;
+      me->deathProb = deathProb;
    }
 
    // load compatibility array for this senior
@@ -76,6 +76,6 @@ int main(int argc, char **argv)
    // see if we can find someone to LSE with
    seniorMatch(me);
 
-   // done: free and exit
+   // done: free and exit. MPI_Finalize here
    senior_finalise(me);
 }

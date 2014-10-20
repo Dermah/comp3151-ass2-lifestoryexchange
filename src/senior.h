@@ -19,20 +19,29 @@ struct senior {
    float deathProb;
 };
 
+// initialises the senior struct and calls MPI_Init
 struct senior* senior_init(int numSeniors, int argc, char **argv);
 
+// frees memory and calls MPI_Finalize
 void senior_finalise(struct senior *me);
 
+// generate a random number from 0 to high-1 using /dev/urandom
 int devrand(int high);
 
+// announce the senior's death from food poisoning. calls senior_finalise
 void announceDeath (struct senior *me);
 
+// announce exchange with another senior. senior should not do much else after this
 void announceExchange (int i, int them);
 
+// announce a period of vegetative thought. calls senior_finalise
 void announceVegetation (struct senior *me);
 
+// pick a random senior that this senior is compatible with
 int pickRandomSenior (struct senior *me);
 
+// send a message to a compatible senior asking to LSE with them
 void askPotentialMatch (struct senior *me);
 
+// decide to LSE with another senior, think vegetatively, or die
 void seniorMatch (struct senior *me);
