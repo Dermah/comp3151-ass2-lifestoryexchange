@@ -19,6 +19,10 @@ struct senior {
    float deathProb;
 };
 
+struct senior* senior_init(int numSeniors, int argc, char **argv);
+
+void senior_finalise(struct senior *me);
+
 int devrand(int high);
 
 void announceDeath (struct senior *me);

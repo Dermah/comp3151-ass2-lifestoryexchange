@@ -4,8 +4,32 @@
 #include <unistd.h>
 #include <mpi.h>
 
-
 #include "senior.h"
+
+struct senior* senior_init(int numSeniors, int argc, char **argv) {
+   int ierr;
+   ierr = MPI_Init(&argc, &argv);
+
+   int seed = devrand(9999999);
+   srand(seed);
+   
+   struct senior *me = malloc(sizeof(struct senior));
+   ierr = MPI_Comm_rank(MPI_COMM_WORLD, &me->id);
+   me->numSeniors = numSeniors;
+   me->compat = malloc(sizeof(int)*numSeniors);
+   me->pairedWith = NO_ONE;
+   me->waitingFor = NO_ONE;
+   me->souped = FALSE;
+   me->deathProb = 0;
+   me->waitTimer = 0;
+   return me;
+}
+
+void senior_finalise(struct senior *me) {
+   free(me->compat);
+   free(me);
+   int ierr = MPI_Finalize();
+}
 
 // come up with a random number between 0 and num-1
 int devrand(int high) {
@@ -20,7 +44,7 @@ int devrand(int high) {
 
 void announceDeath (struct senior *me) {
    printf("%d dies blaming the mushroom soup.\n", me->id+1);
-   int ierr = MPI_Finalize();
+   senior_finalise(me);
    exit(0);
 }
 
@@ -30,7 +54,7 @@ void announceExchange (int i, int them) {
 
 void announceVegetation (struct senior *me) {
    printf("%d has a seniors’ moment.\n", me->id+1);
-   int ierr = MPI_Finalize();
+   senior_finalise(me);
    exit(0);
 }
 
@@ -82,6 +106,7 @@ void askPotentialMatch (struct senior *me) {
    if (me->souped == TRUE) {
       float roll = (float)rand()/(float)(RAND_MAX);
       if (roll <= me->deathProb) {
+         //printf("UNLUCKY %f <= %f\n", roll,me->deathProb);
          announceDeath(me);
       }
    }
