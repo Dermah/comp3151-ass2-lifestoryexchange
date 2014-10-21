@@ -160,3 +160,6 @@ active [N_SENIORS] proctype senior() {
    end:
       skip;
 }
+
+//ensure two-way talking
+ltl talk { []pairedWith -> <>waitingFor };
