@@ -1,5 +1,5 @@
 \documentclass[a4paper]{article}
-\title{LSE}
+\title{Life Story Exchange}
 \author{Steven Antolovich (sant964) \and Wing Kam Chan (wkch250)}
 
 \usepackage{new3151defs}
@@ -12,18 +12,112 @@
 
 \maketitle
 
+\section{Analysis}
+\subsection{Description and Message Complexity}
+The algorithm uses a fairly simple set of messages to successfully negotiate an LSE. There are only three types of message: a request to LSE with someone (\texttt{LSE\_I\_WANT\_TO\_EXCHANGE}), an acknowledgement of this request (\texttt{LSE\_THAT\_SOUNDS\_GREAT}) or a rejection of the request (\texttt{LSE\_NO\_THANKS}). 
+
+When a Senior 1 sends a request to Senior 2, it waits for a response from Senior 2 only. Attempts to initiate an exchange with Senior 1 by anyone else will be met with a \texttt{LSE\_NO\_THANKS}. Senior 1 can receive from Senior 2 either a \texttt{LSE\_THAT\_SOUNDS\_GREAT} or a \texttt{LSE\_I\_WANT\_TO\_EXCHANGE} as confirmation. In the first case, Senior 2 has directly acknowledged and announced, while in the second case, both Senior 2 will eventually receive Senior 1's initial request. The two discover that they are requesting each other, resulting in a successful negotiation. 
+
+If a senior is not waiting to hear back from someone and they receive a request, they are free to immediately acknowledge and announce the request. 
+
+If a senior is rejected by the senior it is waiting to hear from, it makes a note to try and contact them again later and attempts to request someone else. 
+
+If a senior is dead, they do not reply to any messages. Surrounding seniors notice this and stop trying to contact the dead senior. 
+
+A senior that has announced cannot be used by other seniors, effectively making it dead to any compatible seniors. In my implementation, a senior that has announced does not respond to messages, meaning surrounding seniors stop trying to contact them because they think they are dead. This allows death and success to be combined and thus handled in the same way. 
+
+\subsection{Time Complexity}
+This algorithm is not efficient.
+
+It can be compared to bogosort in that the decision of which senior to contact is made randomly. This means that it is possible for every senior to try and contact a senior that doesn't want to hear from them every time, giving an unbounded worst case time complexity. Of course it is also possible for the exact right decision to be made the first time, giving an O(n) complexity in the best case. 
+
+\subsection{Fatality Tolerance}
+The algorithm can handle any number of deaths due to adequate use of timeouts. Using the sample compatibility matrix file in the appendix, the algorithm can successfully negotiate LSE's with zero to twenty deaths occurring. Seniors successfully vegetate if they have no one left to talk to after deaths occur. 
+
+\section{Verification}
+\subsection{Promela}
+Modelling this algorithm with Promela is difficult due to the unbounded complexity described above. There are an infinite number of states when it comes to choosing from the pool of seniors that may still be alive.
+
+Running the model normally runs out of memory due to state explosion:
+\begin{verbatim}
+spin -a  lse.pml
+gcc -DMEMLIM=4096 -O2 -DXUSAFE -DSAFETY -DNOCLAIM -w -o pan pan.c
+./pan -m10000 
+Pid: 47565
+error: max search depth too small
+...
+pan: reached -DMEMLIM bound
+	4.29488e+09 bytes used
+	102400 bytes more needed
+	4.29497e+09 bytes limit
+...
+State-vector 844 byte, depth reached 9999, errors: 0
+  5523391 states, stored
+   486383 states, matched
+  6009774 transitions (= stored+matched)
+        0 atomic steps
+hash conflicts:    117693 (resolved)
+
+Stats on memory usage (in Megabytes):
+ 4593.274	equivalent memory usage for states (stored*(State-vector + overhead))
+ 3986.074	actual memory usage for states (compression: 86.78%)
+         	state-vector as stored = 729 byte + 28 byte overhead
+  128.000	memory used for hash table (-w24)
+    0.534	memory used for DFS stack (-m10000)
+   18.692	memory lost to fragmentation
+ 4095.917	total actual memory usage
+
+pan: elapsed time 13 seconds
+No errors found -- did you verify all claims?
+\end{verbatim}
+
+\section{Comparison}
+The C algorithm and the Promela model are largely the same, the biggest difference being in the \texttt{pickRandomSenior()} function. Picking only live seniors out of an array proves to be difficult in the language, so the first live senior in the list is picked instead. This is also a (futile) strategy to curb state space explosion.
+
+The death probability of a senior is irrelevant since Promela simulates both a senior staying alive and dying, so it is omitted. 
+
+The Promela model cannot read files, so a fully connected graph of seniors is generated at runtime instead.
+
 \section{Assumptions}
 \begin{quote}
 If $a$ announces to enter a moment of contemplative vegetation, then no compatible senior will do the same.
 \end{quote}
-We assume this to mean:
+I have assumed this to mean:
 \begin{quote}
 If $a$ announces to enter a moment of contemplative vegetation, then no compatible senior that is not otherwise dead or already engaged in an LSE will do the same.
 \end{quote}
-
+Also,
 \begin{quote}
 For simplicity, we may assume that no senior dies between exchanging a message and making an announcement... The actual death will then occur according to an even distribution before sending a message
 \end{quote}
-We assume this to mean that no senior dies between exchanging their first message and making an announcement. If it were possible to die between every message, it would be impossible to calculate an even distribution since the number of messages the senior will send before announcing is unknown.
+I have assumed this to mean that no senior dies between exchanging their first message and making an announcement. If it were possible to die between every message, it would be impossible to calculate an even distribution since the number of messages the senior will send before announcing is unknown.
+
+\section{Appendix}
+\subsection{Twenty Senior Compatibility Matrix File}
+\begin{verbatim}
+20
+01000100100100000100
+10110001100100000011
+01011010001100010010
+01100000011100100000
+00100010011110101001
+10000010011110100000
+00101100001100110000
+01000000001100100001
+11000000011101100100
+00011100100100000100
+00111111100100010000
+11111111111000000001
+00001100000000000101
+00000000100000010001
+00011111100000000001
+00100010001001000001
+00001000000000000001
+10000000110010000000
+01100000000000000000
+01001001000111111000
+3 7
+14
+\end{verbatim}
 
 \end{document}

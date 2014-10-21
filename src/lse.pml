@@ -20,16 +20,6 @@ chan c[N_SENIORS] = [16] of { int,  int  }
                            /* what, who */
 
 inline pickRandomSenior () {
-
-   /* we won't find anyone in myCompat if numLater + numDead + 1 = N_SENIORS
-      so we instead look for seniors that are MAYBE_LATER */ 
-   /*lookingFor = TRUE;
-   if
-   :: (numLater + numDead + 1 == N_SENIORS)        -> lookingFor = MAYBE_LATER;
-   :: (numLater == 0 && numDead == N_SENIORS - 1)  -> announceVegetation();
-   :: else                                         -> skip;
-   fi*/
-
    
    /* pick a random compatible senior that hasn't rejected us recently */
    do
