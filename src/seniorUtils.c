@@ -24,7 +24,7 @@ void announceExchange (struct senior *me) {
 }
 
 void announceVegetation (struct senior *me) {
-   printf("%d has a seniors’ moment.\n", (me->id)+1);
+   printf("%d has a seniors' moment.\n", (me->id)+1);
    senior_finalise(me);
    exit(0);
 }
