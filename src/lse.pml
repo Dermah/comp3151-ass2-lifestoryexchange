@@ -22,15 +22,26 @@ chan c[N_SENIORS] = [16] of { int,  int  }
 inline pickRandomSenior () {
    /* not feature complete yet */
 
+   /* we won't find anyone in myCompat if numLater + numDead + 1 = N_SENIORS
+      so we instead look for seniors that are MAYBE_LATER */ 
+   lookingFor = TRUE;
+   if
+   :: (numLater + numDead + 1 == N_SENIORS)  -> lookingFor = MAYBE_LATER;
+   :: else                                   -> skip;
+   fi
+
    /* pick a random compatible senior that hasn't rejected us recently */
    do
    :: friend = (friend + 1)%N_SENIORS;
-   :: (myCompat[friend] == TRUE) -> break;
+   :: (myCompat[friend] == lookingFor) -> myCompat[friend] = TRUE; /* reset them if they were MAYBE_LATER */
+                                          numLater--; 
+                                          break;
    od
+
    /* catch trying to communicate with self */
    if
    :: (friend == id)   -> friend = (friend + 1)%N_SENIORS; assert(false);
-   :: (friend == id)   -> friend = (friend + N_SENIORS)%N_SENIORS; assert(false);
+   :: (friend == id)   -> friend = (friend + N_SENIORS - 1)%N_SENIORS; assert(false);
    :: else             -> skip;
    fi
 
@@ -51,6 +62,7 @@ inline handleIncoming () {
       ->
          myCompat[waitingFor] = MAYBE_LATER;
          waitingFor = NO_ONE;
+         numLater++;
    :: (waitingFor == NO_ONE && theySaid == LSE_I_WANT_TO_EXCHANGE)
       ->
          c[from]!LSE_THAT_SOUNDS_GREAT, id;
@@ -76,7 +88,8 @@ inline handleNoIncoming () {
          waitTimer--;
          if
          :: (waitTimer == 0)  -> myCompat[waitingFor] = FALSE;
-                                 waitingFor == NO_ONE;
+                                 waitingFor = NO_ONE;
+                                 numDead++;
          :: else              -> skip;
          fi
    fi
@@ -103,10 +116,13 @@ active [N_SENIORS] proctype senior() {
    int id = _pid;
    int myCompat[N_SENIORS] = TRUE;
    myCompat[id] = FALSE;
+   int numDead = 0;
+   int numLater = 0;
    int pairedWith = NO_ONE;
    int waitingFor = NO_ONE;
    int souped = FALSE;
    int waitTimer = 0;
+   int lookingFor = TRUE;
 
    askPotentialMatch();
 
