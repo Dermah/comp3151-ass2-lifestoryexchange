@@ -52,6 +52,41 @@ The algorithm can handle any number of deaths due to adequate use of timeouts. U
 \subsection{Promela}
 Modelling this algorithm with Promela is difficult due to the unbounded complexity described above. Placing the \texttt{pickRandomSenior} function inside of an \texttt{atomic \{ \}} block demonstrates the problem: there are an infinite number of states when it comes to choosing from the pool of seniors that may still be alive.
 
+Running the model normally runs out of memory do to state explosion:
+\begin{verbatim}
+spin -a  lse.pml
+gcc -DMEMLIM=4096 -O2 -DXUSAFE -DSAFETY -DNOCLAIM -w -o pan pan.c
+./pan -m10000 
+Pid: 47565
+error: max search depth too small
+...
+pan: reached -DMEMLIM bound
+	4.29488e+09 bytes used
+	102400 bytes more needed
+	4.29497e+09 bytes limit
+...
+State-vector 844 byte, depth reached 9999, errors: 0
+  5523391 states, stored
+   486383 states, matched
+  6009774 transitions (= stored+matched)
+        0 atomic steps
+hash conflicts:    117693 (resolved)
+
+Stats on memory usage (in Megabytes):
+ 4593.274	equivalent memory usage for states (stored*(State-vector + overhead))
+ 3986.074	actual memory usage for states (compression: 86.78%)
+         	state-vector as stored = 729 byte + 28 byte overhead
+  128.000	memory used for hash table (-w24)
+    0.534	memory used for DFS stack (-m10000)
+   18.692	memory lost to fragmentation
+ 4095.917	total actual memory usage
+
+pan: elapsed time 13 seconds
+No errors found -- did you verify all claims?
+\end{verbatim}
+
+while placing the \texttt{atomic} block as described above 
+
 \section{Comparison}
 
 
