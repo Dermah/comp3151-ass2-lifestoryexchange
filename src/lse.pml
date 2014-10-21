@@ -25,6 +25,7 @@ inline pickRandomSenior () {
    /* catch trying to communicate with self */
    if
    :: (friend == id)   -> friend = (friend + 1)%N_SENIORS;
+   :: (friend == id)   -> friend = (friend + N_SENIORS)%N_SENIORS;
    :: else             -> skip;
    fi
 
@@ -69,6 +70,8 @@ inline handleNoIncoming () {
 }
 
 inline askPotentialMatch () {
+   /* MIGHT HAVE TO DIE HERE */
+
    /* pick a random senior {*/
       int friend = 0;
       pickRandomSenior();
@@ -90,25 +93,23 @@ active [4] proctype senior(int id) {
 
    askPotentialMatch();
 
-   /* recieve { */
-   int theySaid = LSE_NO_MESSAGE;
-   int from = NO_ONE;
-   if
-   :: c[id]?[theySaid,from] ->   c[id]?theySaid,from;
-                                 printf("I, %d was told %d by %d\n", id, theySaid, from);
-                                 handleIncoming();
-   :: else                 ->    printf("I, %d, have no message\n", id);
-                                 /* communicate or recieve */
-   fi
-   /* } recieve */
+   do
+   :: (pairedWith == NO_ONE) 
+      ->
+         /* attempt to recieve a message */
+         int theySaid = LSE_NO_MESSAGE;
+         int from = NO_ONE;
+         if
+         :: c[id]?[theySaid,from] ->   c[id]?theySaid,from;
+                                       printf("I, %d was told %d by %d\n", id, theySaid, from);
+                                       handleIncoming();
+         :: else                 ->    printf("I, %d, have no message\n", id);
+                                       /* communicate or recieve */
+         fi
+   :: (pairedWith != NO_ONE) 
+      -> 
+         break;
+   od
 
    announceDeath();
 }
-/*
-init {
-   int i = 0
-   do
-   :: (i <  N_SENIORS) -> run senior(i); i++;
-   :: (i == N_SENIORS) -> break;
-   od
-}*/
