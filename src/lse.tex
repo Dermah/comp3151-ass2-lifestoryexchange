@@ -12,22 +12,8 @@
 
 \maketitle
 
-\section{Assumptions}
-\begin{quote}
-If $a$ announces to enter a moment of contemplative vegetation, then no compatible senior will do the same.
-\end{quote}
-We assume this to mean:
-\begin{quote}
-If $a$ announces to enter a moment of contemplative vegetation, then no compatible senior that is not otherwise dead or already engaged in an LSE will do the same.
-\end{quote}
-
-\begin{quote}
-For simplicity, we may assume that no senior dies between exchanging a message and making an announcement... The actual death will then occur according to an even distribution before sending a message
-\end{quote}
-We assume this to mean that no senior dies between exchanging their first message and making an announcement. If it were possible to die between every message, it would be impossible to calculate an even distribution since the number of messages the senior will send before announcing is unknown.
-
 \section{Analysis}
-\subsection{Message Complexity}
+\subsection{Description and Message Complexity}
 The algorithm uses a fairly simple set of messages to successfully negotiate an LSE. There are only three types of message: a request to LSE with someone (\texttt{LSE\_I\_WANT\_TO\_EXCHANGE}), an acknowledgement of this request (\texttt{LSE\_THAT\_SOUNDS\_GREAT}) or a rejection of the request (\texttt{LSE\_NO\_THANKS}). 
 
 When a Senior 1 sends a request to Senior 2, it waits for a response from Senior 2 only. Attempts to initiate an exchange with Senior 1 by anyone else will be met with a \texttt{LSE\_NO\_THANKS}. Senior 1 can receive from Senior 2 either a \texttt{LSE\_THAT\_SOUNDS\_GREAT} or a \texttt{LSE\_I\_WANT\_TO\_EXCHANGE} as confirmation. In the first case, Senior 2 has directly acknowledged and announced, while in the second case, both Senior 2 will eventually receive Senior 1's initial request. The two discover that they are requesting each other, resulting in a successful negotiation. 
@@ -38,7 +24,7 @@ If a senior is rejected by the senior it is waiting to hear from, it makes a not
 
 If a senior is dead, they do not reply to any messages. Surrounding seniors notice this and stop trying to contact the dead senior. 
 
-A senior that has announced cannot be used by any seniors, effectively making them dead to any compatible seniors. In my implementation, a senior that has announced does not respond to messages, meaning surrounding seniors stop trying to contact them because they think they are dead. This allows death and success to be combined and thus handled in the same way. 
+A senior that has announced cannot be used by other seniors, effectively making it dead to any compatible seniors. In my implementation, a senior that has announced does not respond to messages, meaning surrounding seniors stop trying to contact them because they think they are dead. This allows death and success to be combined and thus handled in the same way. 
 
 \subsection{Time Complexity}
 This algorithm is not efficient.
@@ -50,9 +36,9 @@ The algorithm can handle any number of deaths due to adequate use of timeouts. U
 
 \section{Verification}
 \subsection{Promela}
-Modelling this algorithm with Promela is difficult due to the unbounded complexity described above. Placing the \texttt{pickRandomSenior} function inside of an \texttt{atomic \{ \}} block demonstrates the problem: there are an infinite number of states when it comes to choosing from the pool of seniors that may still be alive.
+Modelling this algorithm with Promela is difficult due to the unbounded complexity described above. There are an infinite number of states when it comes to choosing from the pool of seniors that may still be alive.
 
-Running the model normally runs out of memory do to state explosion:
+Running the model normally runs out of memory due to state explosion:
 \begin{verbatim}
 spin -a  lse.pml
 gcc -DMEMLIM=4096 -O2 -DXUSAFE -DSAFETY -DNOCLAIM -w -o pan pan.c
@@ -85,10 +71,26 @@ pan: elapsed time 13 seconds
 No errors found -- did you verify all claims?
 \end{verbatim}
 
-while placing the \texttt{atomic} block as described above 
-
 \section{Comparison}
+The C algorithm and the Promela model are largely the same, the biggest difference being in the \texttt{pickRandomSenior()} function. Picking only live seniors out of an array proves to be difficult in the language, so the first live senior in the list is picked instead. This is also a (futile) strategy to curb state space explosion.
 
+The death probability of a senior is irrelevant since Promela simulates both a senior staying alive and dying, so it is omitted. 
+
+The Promela model cannot read files, so a fully connected graph of seniors is generated at runtime instead.
+
+\section{Assumptions}
+\begin{quote}
+If $a$ announces to enter a moment of contemplative vegetation, then no compatible senior will do the same.
+\end{quote}
+I have assumed this to mean:
+\begin{quote}
+If $a$ announces to enter a moment of contemplative vegetation, then no compatible senior that is not otherwise dead or already engaged in an LSE will do the same.
+\end{quote}
+Also,
+\begin{quote}
+For simplicity, we may assume that no senior dies between exchanging a message and making an announcement... The actual death will then occur according to an even distribution before sending a message
+\end{quote}
+I have assumed this to mean that no senior dies between exchanging their first message and making an announcement. If it were possible to die between every message, it would be impossible to calculate an even distribution since the number of messages the senior will send before announcing is unknown.
 
 \section{Appendix}
 \subsection{Twenty Senior Compatibility Matrix File}
