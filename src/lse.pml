@@ -1,7 +1,6 @@
 #include "lse-pml.h"
 
 #define N_SENIORS  4
-#define DEATH_PROB 0.1
 
 #define TRUE        1
 #define FALSE       0
@@ -28,13 +27,15 @@ inline pickRandomSenior () {
    od
 
    if 
-   :: (friend == N_SENIORS)   -> friend = 0;
-                                 /* pick a random compatible senior that hasn't rejected us recently */
-                                 do
-                                    :: (friend < N_SENIORS && myCompat[friend] != MAYBE_LATER) -> friend++;
-                                    :: (friend < N_SENIORS && myCompat[friend] == MAYBE_LATER) -> myCompat[friend] = TRUE; break;
-                                    :: (friend == N_SENIORS) -> announceVegetation();
-                                 od
+   :: (friend == N_SENIORS)   
+      -> 
+         friend = 0;
+         /* pick a random compatible senior that HAS rejected us recently */
+         do
+            :: (friend < N_SENIORS && myCompat[friend] != MAYBE_LATER) -> friend++;
+            :: (friend < N_SENIORS && myCompat[friend] == MAYBE_LATER) -> myCompat[friend] = TRUE; break;
+            :: (friend == N_SENIORS) -> announceVegetation();
+         od
    :: else -> skip;
    fi
 
