@@ -1,6 +1,6 @@
 #include "lse-pml.h"
 
-#define N_SENIORS  6
+#define N_SENIORS  4
 #define DEATH_PROB 0.1
 
 #define TRUE        1
@@ -14,19 +14,23 @@
 
 #define NO_ONE -1 
 
+#define SENIOR_TIMEOUT_CHECKS 5
+
 chan c[N_SENIORS] = [16] of { int,  int  }
                            /* what, who */
 
 inline pickRandomSenior () {
    /* not feature complete yet */
+
+   /* pick a random compatible senior that hasn't rejected us recently */
    do
    :: friend = (friend + 1)%N_SENIORS;
-   :: break;
+   :: (myCompat[friend] == TRUE) -> break;
    od
    /* catch trying to communicate with self */
    if
-   :: (friend == id)   -> friend = (friend + 1)%N_SENIORS;
-   :: (friend == id)   -> friend = (friend + N_SENIORS)%N_SENIORS;
+   :: (friend == id)   -> friend = (friend + 1)%N_SENIORS; assert(false);
+   :: (friend == id)   -> friend = (friend + N_SENIORS)%N_SENIORS; assert(false);
    :: else             -> skip;
    fi
 
@@ -66,7 +70,15 @@ inline handleIncoming () {
 inline handleNoIncoming () {
    if
    :: (waitingFor == NO_ONE)  -> askPotentialMatch(); /* pick friend and ask */
-   :: else                    -> /* timout function */
+   :: else                    
+      -> 
+         /* timout function */
+         waitTimer--;
+         if
+         :: (waitTimer == 0)  -> myCompat[waitingFor] = FALSE;
+                                 waitingFor == NO_ONE;
+         :: else              -> skip;
+         fi
    fi
 }
 
@@ -78,6 +90,7 @@ inline askPotentialMatch () {
       int friend = 0;
       pickRandomSenior();
       waitingFor = friend;
+      waitTimer = SENIOR_TIMEOUT_CHECKS;
    /* } pick a random senior*/
 
    /* communicate { */
@@ -85,9 +98,11 @@ inline askPotentialMatch () {
    /*} communicate */
 }
 
-active [4] proctype senior(int id) {
+active [N_SENIORS] proctype senior() {
    /* init */
-   int myCompat[N_SENIORS];
+   int id = _pid;
+   int myCompat[N_SENIORS] = TRUE;
+   myCompat[id] = FALSE;
    int pairedWith = NO_ONE;
    int waitingFor = NO_ONE;
    int souped = FALSE;
