@@ -1,5 +1,5 @@
 \documentclass[a4paper]{article}
-\title{LSE}
+\title{Life Story Exchange}
 \author{Steven Antolovich (sant964) \and Wing Kam Chan (wkch250)}
 
 \usepackage{new3151defs}
@@ -27,8 +27,26 @@ For simplicity, we may assume that no senior dies between exchanging a message a
 We assume this to mean that no senior dies between exchanging their first message and making an announcement. If it were possible to die between every message, it would be impossible to calculate an even distribution since the number of messages the senior will send before announcing is unknown.
 
 \section{Analysis}
+\subsection{Message Complexity}
+The algorithm uses a fairly simple set of messages to successfully negotiate an LSE. There are only three types of message: a request to LSE with someone (\texttt{LSE\_I\_WANT\_TO\_EXCHANGE}), an acknowledgement of this request (\texttt{LSE\_THAT\_SOUNDS\_GREAT}) or a rejection of the request (\texttt{LSE\_NO\_THANKS}). 
+
+When a Senior 1 sends a request to Senior 2, it waits for a response from Senior 2 only. Attempts to initiate an exchange with Senior 1 by anyone else will be met with a \texttt{LSE\_NO\_THANKS}. Senior 1 can receive from Senior 2 either a \texttt{LSE\_THAT\_SOUNDS\_GREAT} or a \texttt{LSE\_I\_WANT\_TO\_EXCHANGE} as confirmation. In the first case, Senior 2 has directly acknowledged and announced, while in the second case, both Senior 2 will eventually receive Senior 1's initial request. The two discover that they are requesting each other, resulting in a successful negotiation. 
+
+If a senior is not waiting to hear back from someone and they receive a request, they are free to immediately acknowledge and announce the request. 
+
+If a senior is rejected by the senior it is waiting to hear from, it makes a note to try and contact them again later and attempts to request someone else. 
+
+If a senior is dead, they do not reply to any messages. Surrounding seniors notice this and stop trying to contact the dead senior. 
+
+A senior that has announced cannot be used by any seniors, effectively making them dead to any compatible seniors. In my implementation, a senior that has announced does not respond to messages, meaning surrounding seniors stop trying to contact them because they think they are dead. This allows death and success to be combined and thus handled in the same way. 
+
+\subsection{Time Complexity}
+This algorithm is not efficient.
+
+
 
 \section{Verification}
+\subsection{Promela}
 
 \section{Comparison}
 
