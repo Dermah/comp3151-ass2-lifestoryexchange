@@ -24,20 +24,19 @@ proctype senior(int id) {
 
    int i = 0;
    do
-   :: (skip) -> i++;
-   :: (skip) -> i++;
-   :: (skip) -> i++;
-   :: (skip) -> break;
+   :: i = (i + 1)%N_SENIORS;
+   :: break;
    od
 
    // catch trying to communicate with self
    if
    :: (i == id)        -> i = (i + 1)%N_SENIORS;
-   :: (i >= N_SENIORS) -> i = N_SENIORS -1;
    :: else             -> skip;
    fi
 
    printf("%d chose %d\n", id, i);
+   assert(i != id);
+   assert(i < N_SENIORS);
    announceDeath();
 }
 
