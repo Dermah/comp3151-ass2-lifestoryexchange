@@ -14,29 +14,51 @@
 
 #define NO_ONE -1 
 
-chan c[N_SENIORS] = [16] of { int }
+chan c[N_SENIORS] = [16] of { int,  int  }
+//                            what, who
 
-proctype senior(int id) {
-   c[(id+1)%N_SENIORS]!LSE_I_WANT_TO_EXCHANGE;
-   int x = LSE_NO_MESSAGE;
-   c[id]?x
-   //printf("%d got a %d\n", id, x)
-
-   int i = 0;
+inline pickFriend () {
    do
-   :: i = (i + 1)%N_SENIORS;
+   :: friend = (friend + 1)%N_SENIORS;
    :: break;
    od
-
    // catch trying to communicate with self
    if
-   :: (i == id)        -> i = (i + 1)%N_SENIORS;
+   :: (friend == id)   -> friend = (friend + 1)%N_SENIORS;
    :: else             -> skip;
    fi
+}
 
-   printf("%d chose %d\n", id, i);
-   assert(i != id);
-   assert(i < N_SENIORS);
+proctype senior(int id) {
+   // communicate
+   //c[(id+1)%N_SENIORS]!LSE_I_WANT_TO_EXCHANGE;
+   //int x = LSE_NO_MESSAGE;
+   //c[id]?x
+   //printf("%d got a %d\n", id, x)
+
+
+   // pick a random senior {
+      int friend = 0;
+      pickFriend();
+   // } pick a random senior
+
+   // communicate {
+      c[friend]!LSE_I_WANT_TO_EXCHANGE, id;
+   //} communicate
+
+   // recieve {
+      int message = LSE_NO_MESSAGE;
+      int who = NO_ONE;
+      if
+      :: c[id]?[message,who] -> c[id]?message,who;
+                                printf("I, %d was told %d by %d\n", id, message, who);
+      :: else                -> printf("I, %d, have no message\n", id);
+      fi
+      
+   // } recieve
+   assert(friend >= 0);
+   assert(friend != id);
+   assert(friend < N_SENIORS);
    announceDeath();
 }
 
