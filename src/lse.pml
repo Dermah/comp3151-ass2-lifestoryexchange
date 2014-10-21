@@ -18,6 +18,7 @@ chan c[N_SENIORS] = [16] of { int,  int  }
                            /* what, who */
 
 inline pickRandomSenior () {
+   /* not feature complete yet */
    do
    :: friend = (friend + 1)%N_SENIORS;
    :: break;
@@ -64,12 +65,13 @@ inline handleIncoming () {
 
 inline handleNoIncoming () {
    if
-   :: (waitingFor == NO_ONE)  -> /* pick friend and ask */
-   :: else                    -> /* timout */
+   :: (waitingFor == NO_ONE)  -> askPotentialMatch(); /* pick friend and ask */
+   :: else                    -> /* timout function */
    fi
 }
 
 inline askPotentialMatch () {
+   /* not feature complete yet */
    /* MIGHT HAVE TO DIE HERE */
 
    /* pick a random senior {*/
@@ -100,16 +102,21 @@ active [4] proctype senior(int id) {
          int theySaid = LSE_NO_MESSAGE;
          int from = NO_ONE;
          if
-         :: c[id]?[theySaid,from] ->   c[id]?theySaid,from;
-                                       printf("I, %d was told %d by %d\n", id, theySaid, from);
-                                       handleIncoming();
-         :: else                 ->    printf("I, %d, have no message\n", id);
-                                       /* communicate or recieve */
+         :: c[id]?[theySaid,from] 
+            ->
+               c[id]?theySaid,from;
+               printf("I, %d was told %d by %d\n", id, theySaid, from);
+               handleIncoming();
+         :: else  
+            ->
+               printf("I, %d, have no message\n", id);
+               /* communicate or timeout */
+               handleNoIncoming();
          fi
    :: (pairedWith != NO_ONE) 
       -> 
          break;
    od
 
-   announceDeath();
+   announceExchange();
 }
