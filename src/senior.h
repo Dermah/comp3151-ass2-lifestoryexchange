@@ -44,9 +44,11 @@ void announceExchange (struct senior *me);
 void announceVegetation (struct senior *me);
 
 // pick a random senior that this senior is compatible with
+// if there are none, this function will cause vegetation
 int pickRandomSenior (struct senior *me);
 
 // send a message to a compatible senior asking to LSE with them
+// if there are none, this function will cause vegetation
 void askPotentialMatch (struct senior *me);
 
 // decide to LSE with another senior, think vegetatively, or die
