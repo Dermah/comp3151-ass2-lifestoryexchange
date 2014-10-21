@@ -46,10 +46,11 @@ This algorithm is not efficient.
 It can be compared to bogosort in that the decision of which senior to contact is made randomly. This means that it is possible for every senior to try and contact a senior that doesn't want to hear from them every time, giving an unbounded worst case time complexity. Of course it is also possible for the exact right decision to be made the first time, giving an O(n) complexity in the best case. 
 
 \subsection{Fatality Tolerance}
-The algorithm can handle any number of deaths due to adequate use of timeouts. 
+The algorithm can handle any number of deaths due to adequate use of timeouts. Using the sample compatibility matrix file in the appendix, the algorithm can successfully negotiate LSE's with zero to twenty deaths occurring. Seniors successfully vegetate if they have no one left to talk to after deaths occur. 
 
 \section{Verification}
 \subsection{Promela}
+Modelling this algorithm with Promela is difficult due to the unbounded complexity described above. Placing the \texttt{pickRandomSenior} function inside of an \texttt{atomic \{ \}} block demonstrates the problem: there are an infinite number of states when it comes to choosing from the pool of seniors that may still be alive.
 
 \section{Comparison}
 
