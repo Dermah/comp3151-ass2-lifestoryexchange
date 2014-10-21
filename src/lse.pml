@@ -20,23 +20,34 @@ chan c[N_SENIORS] = [16] of { int,  int  }
                            /* what, who */
 
 inline pickRandomSenior () {
-   /* not feature complete yet */
 
    /* we won't find anyone in myCompat if numLater + numDead + 1 = N_SENIORS
       so we instead look for seniors that are MAYBE_LATER */ 
-   lookingFor = TRUE;
+   /*lookingFor = TRUE;
    if
-   :: (numLater + numDead + 1 == N_SENIORS)  -> lookingFor = MAYBE_LATER;
-   :: else                                   -> skip;
-   fi
+   :: (numLater + numDead + 1 == N_SENIORS)        -> lookingFor = MAYBE_LATER;
+   :: (numLater == 0 && numDead == N_SENIORS - 1)  -> announceVegetation();
+   :: else                                         -> skip;
+   fi*/
 
+   
    /* pick a random compatible senior that hasn't rejected us recently */
    do
-   :: friend = (friend + 1)%N_SENIORS;
-   :: (myCompat[friend] == lookingFor) -> myCompat[friend] = TRUE; /* reset them if they were MAYBE_LATER */
-                                          numLater--; 
-                                          break;
+      :: (friend < N_SENIORS && myCompat[friend] != TRUE) -> friend++;
+      :: (friend == N_SENIORS || myCompat[friend] == TRUE) -> break;
    od
+
+   if 
+   :: (friend == N_SENIORS)   -> friend = 0;
+                                 /* pick a random compatible senior that hasn't rejected us recently */
+                                 do
+                                    :: (friend < N_SENIORS && myCompat[friend] != MAYBE_LATER) -> friend++;
+                                    :: (friend < N_SENIORS && myCompat[friend] == MAYBE_LATER) -> myCompat[friend] = TRUE; break;
+                                    :: (friend == N_SENIORS) -> announceVegetation();
+                                 od
+   :: else -> skip;
+   fi
+
 
    /* catch trying to communicate with self */
    if
@@ -97,7 +108,11 @@ inline handleNoIncoming () {
 
 inline askPotentialMatch () {
    /* not feature complete yet */
-   /* MIGHT HAVE TO DIE HERE */
+   
+   if
+   :: announceDeath();
+   :: skip
+   fi
 
    /* pick a random senior {*/
       int friend = 0;
@@ -150,4 +165,7 @@ active [N_SENIORS] proctype senior() {
    od
 
    announceExchange();
+
+   end:
+      skip;
 }

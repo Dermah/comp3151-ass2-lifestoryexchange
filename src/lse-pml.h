@@ -1,5 +1,6 @@
 inline announceDeath() {
    printf("%d dies blaming the mushroom soup.\n", id+1);
+   goto end;
 }
 
 inline announceExchange () {
@@ -8,4 +9,5 @@ inline announceExchange () {
 
 inline announceVegetation () {
    printf("%d has a seniors’ moment.\n", id+1);
+   goto end;
 }
